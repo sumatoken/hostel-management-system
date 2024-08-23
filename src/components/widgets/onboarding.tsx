@@ -142,25 +142,27 @@ const Step2 = () => {
     const form = useFormContext<z.infer<typeof onboardingSchema>>()
     const numberOfFloors = form.getValues('numFloors')
 
-    return Array.from({ length: numberOfFloors }).map((_, index) => (
-        <FormField
-            key={index}
-            control={form.control}
-            name={'roomsPerFloor.floor_' + (index + 1).toString() as `roomsPerFloor.${string}`}
-            render={({ field }) => (
-                <FormItem className="w-full">
-                    <FormLabel>Nombre de chambres à l{"'"}étage {index + 1}</FormLabel>
-                    <FormControl>
-                        <Input type="number" {...field} />
-                    </FormControl>
+    return (<div className="w-full flex flex-col gap-8">
 
-                    <FormMessage />
-                </FormItem>
-            )}
-        />
-    )
+        {Array.from({ length: numberOfFloors }).map((_, index) => (
+            <FormField
+                key={index}
+                control={form.control}
+                name={'roomsPerFloor.floor_' + (index + 1).toString() as `roomsPerFloor.${string}`}
+                render={({ field }) => (
+                    <FormItem className="w-full">
+                        <FormLabel>Nombre de chambres à l{"'"}étage {index + 1}</FormLabel>
+                        <FormControl>
+                            <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        )
 
-    )
+        )}
+    </div>)
 }
 
 const Step3 = () => {
