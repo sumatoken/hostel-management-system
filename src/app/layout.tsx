@@ -37,7 +37,7 @@ export default function RootLayout({
               <Link href={'/'}> <span className="font-bold text-lg"><span className="dark:text-white">Manage</span> <span className="text-[#06a2bf] dark:text-[#74e7ff]">Hostel</span></span>
               </Link>
               <div className="flex items-center gap-4">
-                <Link href={'/dashboard'} className="bg-[#06a2bf] dark:bg-[#74e7ff] rounded-md px-3.5 py-2.5 text-xs font-bold shadow-sm text-[#2c2c2c] hover:scale-105 ease-in-out duration-200">Dashboard</Link>
+                <Link href={'/dashboard'} className="bg-[#06a2bf] dark:bg-[#74e7ff] rounded-md px-3.5 py-2.5 text-xs font-bold shadow-sm text-white dark:text-[#2c2c2c] hover:scale-105 ease-in-out duration-200">Dashboard</Link>
                 <ThemeToggle />
               </div>
             </nav>
