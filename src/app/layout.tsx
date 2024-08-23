@@ -31,7 +31,7 @@ export default function RootLayout({
         enableSystem
         disableTransitionOnChange
       >
-        <div className="flex flex-col items-center justify-between gap-10 px-4 py-6">
+        <div className="flex flex-col items-center justify-between gap-10 px-1 py-2 lg:px-4 lg:py-6">
           <header className="w-full px-4 max-w-[1440px]">
             <nav className="flex items-center justify-between">
               <Link href={'/'}> <span className="font-bold text-lg"><span className="dark:text-white">Manage</span> <span className="text-[#06a2bf] dark:text-[#74e7ff]">Hostel</span></span>
