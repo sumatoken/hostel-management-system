@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form"
 import { useRouter } from "next/navigation"
 import { useLocalStorage } from "usehooks-ts"
-import { ArrowRightIcon } from "lucide-react"
+import { ArrowRightIcon, Loader } from "lucide-react"
 
 
 
@@ -55,6 +55,9 @@ const Onboarding = () => {
         form.setValue('step', steps[currentStepIndex + 1])
     }
     function onSubmit(values: z.infer<typeof onboardingSchema>) {
+        console.log('====================================');
+        console.log(values);
+        console.log('====================================');
         if (values.step !== 'DONE') {
             return
         }
@@ -83,11 +86,15 @@ const Onboarding = () => {
         return router.push('/dashboard')
     }
 
+    if (form.getValues('step') === 'DONE') {
+        return <Loader className="w-10 h-10 animate-spin" />
+    }
+
     return (
 
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-8 relative z-10 flex flex-col items-center justify-center">
-                <div className="flex w-full max-w-sm items-end  space-x-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="h-fit w-full space-y-8 lg:px-10 relative z-10 flex flex-col items-center justify-center">
+                <div className="flex w-full items-center justify-center  space-x-2">
                     {form.getValues('step') === 'NAME' && <Step0 />}
                     {form.getValues('step') === 'NUM_FLOORS' && <Step1 />}
                     {form.getValues('step') === 'ROOMS_PER_FLOOR' && <Step2 />}
@@ -106,7 +113,7 @@ const Step0 = () => {
         control={form.control}
         name="name"
         render={({ field }) => (
-            <FormItem className="w-full">
+            <FormItem className="w-full max-w-sm">
                 <FormLabel>Nom de l{"'"}hostel</FormLabel>
                 <FormControl>
                     <Input placeholder="Hilton" {...field} />
@@ -125,10 +132,10 @@ const Step1 = () => {
             control={form.control}
             name="numFloors"
             render={({ field }) => (
-                <FormItem className="w-full">
+                <FormItem className="w-full max-w-sm">
                     <FormLabel>Nombre {"'"}étages</FormLabel>
                     <FormControl>
-                        <Input type="number" {...field} />
+                        <Input type="number" min={0} {...field} />
                     </FormControl>
 
                     <FormMessage />
@@ -142,8 +149,7 @@ const Step2 = () => {
     const form = useFormContext<z.infer<typeof onboardingSchema>>()
     const numberOfFloors = form.getValues('numFloors')
 
-    return (<div className="w-full flex flex-col gap-8">
-
+    return (<div className="w-full flex flex-col gap-8 max-w-sm">
         {Array.from({ length: numberOfFloors }).map((_, index) => (
             <FormField
                 key={index}
@@ -153,7 +159,7 @@ const Step2 = () => {
                     <FormItem className="w-full">
                         <FormLabel>Nombre de chambres à l{"'"}étage {index + 1}</FormLabel>
                         <FormControl>
-                            <Input type="number" {...field} />
+                            <Input type="number" min={0} {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -171,7 +177,7 @@ const Step3 = () => {
     const roomsPerFloor = form.getValues('roomsPerFloor')
 
     return (
-        <div className="w-full flex flex-col gap-8">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-3xl">
             {Array.from({ length: numberOfFloors }).map((_, index) => {
                 const floorKey = `floor_${index + 1}`;
                 return (
@@ -186,7 +192,7 @@ const Step3 = () => {
                                     <FormItem className="w-full">
                                         <FormLabel>Lits dans la chambre {roomIndex + 1}</FormLabel>
                                         <FormControl>
-                                            <Input type="number" {...field} />
+                                            <Input type="number" min={0} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

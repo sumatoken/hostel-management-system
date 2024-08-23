@@ -137,8 +137,8 @@ const Bed = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex:
 
     return (
         <button onClick={toggleOccupation}>
-            <Card key={bedIndex} className={cn(localStorage.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied ? " border-red-400" : "border-4 border-green-400", 'border-2')}>
-                <CardContent className="pt-6">
+            <Card key={bedIndex} className={cn('h-full', localStorage.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied ? " border-red-400" : "border-4 border-green-400", 'border-2')}>
+                <CardContent className="p-4 space-y-4">
                     <CardHeader className="w-full flex flex-row items-center justify-between p-0">
                         <CardTitle className="text-lg">Lit {bedIndex + 1}</CardTitle>
                         <BedInfo bedIndex={bedIndex} roomIndex={roomIndex} floorIndex={floorIndex} />
