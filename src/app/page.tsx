@@ -7,13 +7,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-between gap-10 px-4 py-6">
-      <header className="w-full px-4 max-w-[1440px]">
-        <nav className="flex items-center justify-between">
-          <span className="font-bold text-lg"><span className="dark:text-white">Manage</span> <span className="text-[#06a2bf] dark:text-[#74e7ff]">Hostel</span></span>
-          <ThemeToggle />
-        </nav>
-      </header>
+    <>
       <main className="flex min-h-[calc(100vh-88px)] h-full flex-col items-center justify-center">
         <div className="w-full h-full flex flex-col items-center justify-center gap-10">
           <div className="w-full h-full flex flex-col items-center gap-4">
@@ -41,11 +35,6 @@ export default function Home() {
           <Image src='/dashboard-3.png' className="mt-2 rounded shadow" width={546} height={500} alt="Dashboard" />
         </div>
       </div>
-      <div className="w-full max-w-[1440px] px-4 flex items-center justify-between">
-        <p className="text-sm text-gray-400">© 2024. All
-          rights reserved.</p>
-        <p className="text-sm text-gray-400">Made by <Link href="https://linkedin.com/in/mohammed-bermime" target="_blank" className="text-[#06a2bf] dark:text-[#74e7ff]">Mohammed Bermime</Link></p>
-      </div>
-    </div>
+    </>
   );
 }

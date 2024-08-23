@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,7 +31,25 @@ export default function RootLayout({
         enableSystem
         disableTransitionOnChange
       >
-        {children}
+        <div className="flex flex-col items-center justify-between gap-10 px-4 py-6">
+          <header className="w-full px-4 max-w-[1440px]">
+            <nav className="flex items-center justify-between">
+              <Link href={'/'}> <span className="font-bold text-lg"><span className="dark:text-white">Manage</span> <span className="text-[#06a2bf] dark:text-[#74e7ff]">Hostel</span></span>
+              </Link>
+              <div className="flex items-center gap-4">
+                <Link href={'/dashboard'} className="bg-[#06a2bf] dark:bg-[#74e7ff] rounded-md px-3.5 py-2.5 text-xs font-bold shadow-sm text-[#2c2c2c] hover:scale-105 ease-in-out duration-200">Dashboard</Link>
+                <ThemeToggle />
+              </div>
+            </nav>
+          </header>
+
+          {children}
+          <div className="w-full max-w-[1440px] px-4 flex items-center justify-between">
+            <p className="text-sm text-gray-400">© 2024. All
+              rights reserved.</p>
+            <p className="text-sm text-gray-400">Made by <Link href="https://linkedin.com/in/mohammed-bermime" target="_blank" className="text-[#06a2bf] dark:text-[#74e7ff]">Mohammed Bermime</Link></p>
+          </div>
+        </div>
       </ThemeProvider>
       </body>
     </html>
