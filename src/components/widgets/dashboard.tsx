@@ -249,7 +249,6 @@ const BedInfo = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIn
     });
 
     function onSubmit(values: z.infer<typeof bedInfoSchema>) {
-        console.log(values)
         const newValues = { ...localStorage };
         newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].client = {
             name: values.clientName,
