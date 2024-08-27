@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState } from "react";
-import { z } from "zod";
-import { onboardingSchema } from "./onboarding";
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
+import { z } from "zod"
 import {
     Card,
     CardContent,
@@ -36,14 +35,17 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-
+import { pdf } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
 import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../ui/button";
 import { DatePickerWithRange } from "../ui/date-picker-range";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, DownloadCloud, Loader2 } from "lucide-react";
+import ClientPrint from "./client-print";
+import type { ClientPrintProps } from "./client-print";
 
 const bedInfoSchema = z.object({
     clientName: z.string(),
@@ -82,28 +84,31 @@ function Dashboard() {
     }
 
     return (
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {localStorage.floors.map((_, index) => {
-                return (
-                    <Card className="flex flex-col gap-4" key={_.id}>
-                        <CardContent>
-                            <CardHeader>
-                                <CardTitle>Étage {_.id}</CardTitle>
-                            </CardHeader>
-                            {localStorage.floors[index].rooms.map((_, roomIndex) => {
-                                return (
-                                    <Room key={_.id} floorIndex={index} roomIndex={roomIndex} />
-                                )
-                            })}
-                        </CardContent>
-                    </Card>
-                )
-            })}
-        </div>
+        <>
+            <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {localStorage.floors.map((_, index) => {
+                    return (
+                        <Card className="flex flex-col gap-4" key={_.id}>
+                            <CardContent>
+                                <CardHeader>
+                                    <CardTitle>Étage {_.id}</CardTitle>
+                                </CardHeader>
+                                {localStorage.floors[index].rooms.map((_, roomIndex) => {
+                                    return (
+                                        <Room key={_.id} floorIndex={index} roomIndex={roomIndex} />
+                                    )
+                                })}
+                            </CardContent>
+                        </Card>
+                    )
+                })}
+            </div>
+        </>
     );
 }
 
 const Bed = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex: number, floorIndex: number }) => {
+    const bedInfoRef = useRef<{ setOpen: (open: boolean) => void }>(null);
     const [localStorage, setValues] = useLocalStorage<{
         name: string;
         floors: {
@@ -113,7 +118,7 @@ const Bed = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex:
                 beds: {
                     id: string;
                     occupied: boolean;
-                    client: {
+                    client?: {
                         name: string;
                         CIN: string;
                         phone: string;
@@ -128,11 +133,19 @@ const Bed = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex:
         name: '',
         floors: [],
     });
-    const client = localStorage.floors[floorIndex].rooms[roomIndex].beds[bedIndex].client;
+    const bed = localStorage.floors[floorIndex].rooms[roomIndex].beds[bedIndex];
+    const client = bed.client
     const toggleOccupation = () => {
-        const newValues = { ...localStorage };
-        newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied = !newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied;
-        setValues(newValues);
+        if (bed.occupied) {
+            const newValues = { ...localStorage };
+            newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied = false
+            delete newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].client
+            setValues(newValues);
+            return
+        }
+        if (bedInfoRef.current) {
+            bedInfoRef.current.setOpen(true);
+        }
     }
 
     return (
@@ -141,7 +154,10 @@ const Bed = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex:
                 <CardContent className="p-4 space-y-4">
                     <CardHeader className="w-full flex flex-row items-center justify-between p-0">
                         <CardTitle className="text-lg">Lit {bedIndex + 1}</CardTitle>
-                        <BedInfo bedIndex={bedIndex} roomIndex={roomIndex} floorIndex={floorIndex} />
+                        <div className="flex items-center justify-end gap-2">
+                            <BedInfo ref={bedInfoRef} bedIndex={bedIndex} roomIndex={roomIndex} floorIndex={floorIndex} />
+                            <DownloadClientPrint bedIndex={bedIndex} roomIndex={roomIndex} floorIndex={floorIndex} />
+                        </div>
                     </CardHeader>
                     <CardDescription>{client?.occupationDuration ?? '-'}</CardDescription>
                 </CardContent>
@@ -196,7 +212,7 @@ const Room = ({ roomIndex, floorIndex }: { roomIndex: number, floorIndex: number
                 </div>
                 <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
             </AccordionTrigger>
-            <AccordionContent className="grid grid-cols-1 md:grid-cols-4 gap-1">
+            <AccordionContent className="grid grid-cols-1 md:grid-cols-1 gap-1">
                 {localStorage.floors[floorIndex].rooms[roomIndex].beds.map((_, bedIndex) => {
                     return (
                         <Bed key={_.id} bedIndex={bedIndex} roomIndex={roomIndex} floorIndex={floorIndex} />
@@ -207,8 +223,12 @@ const Room = ({ roomIndex, floorIndex }: { roomIndex: number, floorIndex: number
     </Accordion>)
 }
 
-const BedInfo = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex: number, floorIndex: number }) => {
+const BedInfo = forwardRef(({ bedIndex, roomIndex, floorIndex, }: { bedIndex: number, roomIndex: number, floorIndex: number }, ref) => {
+
     const [open, setOpen] = useState(false);
+    useImperativeHandle(ref, () => ({
+        setOpen,
+    }));
     const [localStorage, setLocalStorage] = useLocalStorage<{
         name: string;
         floors: {
@@ -233,22 +253,24 @@ const BedInfo = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIn
         name: '',
         floors: [],
     });
-    const client = localStorage.floors[floorIndex].rooms[roomIndex].beds[bedIndex].client;
+    const bed = localStorage.floors[floorIndex].rooms[roomIndex].beds[bedIndex]
+    const client = bed.client;
     const form = useForm<z.infer<typeof bedInfoSchema>>({
         resolver: async (data, context, options) => {
             console.log("data from Form component", Object.keys(data).length, data, "context", context, "options", options)
             console.log("zod resolver", await zodResolver(bedInfoSchema)(data ?? {}, context, options) ?? {})
             return zodResolver(bedInfoSchema)(data, context, options)
         },
-        defaultValues: {
+        defaultValues: client && {
             clientName: client?.name || '',
             clientCIN: client?.CIN || '',
             clientPhone: client?.phone || '',
             bedOccupationDuration: client?.occupationDuration || ''
-        }
+        },
+        // shouldUnregister: true,
     });
 
-    function onSubmit(values: z.infer<typeof bedInfoSchema>) {
+    const onSubmit = (values: z.infer<typeof bedInfoSchema>) => {
         const newValues = { ...localStorage };
         newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].client = {
             name: values.clientName,
@@ -258,6 +280,7 @@ const BedInfo = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIn
             from: values.from,
             to: values.to,
         };
+        newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied = true;
         setLocalStorage(newValues);
         setOpen(false);
     }
@@ -272,9 +295,25 @@ const BedInfo = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIn
         form.setValue('bedOccupationDuration', prettyDate);
     }
 
+    const onOpenChange = (open: boolean) => {
+        setOpen(open);
+    }
+
+    useEffect(() => {
+        if (!client) {
+            form.reset()
+        }
+    }, [client, form])
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger onClick={handleClick} className="hover:bg-gray-500 ease-in duration-150 rounded px-1"> <InfoIcon /></DialogTrigger>
+        <Dialog open={open} onOpenChange={onOpenChange} >
+            <DialogTrigger
+                disabled={!client}
+                onClick={handleClick}
+                className={cn('text-white font-semibold py-2 px-4 rounded shadow-md transition duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 flex items-center gap-2', !client ? 'bg-gray-100 cursor-not-allowed text-black' : 'bg-blue-500 hover:bg-blue-600'
+                )}
+            >
+                Info <InfoIcon />
+            </DialogTrigger>
             <DialogContent className="w-11/12 sm:max-w-md rounded" onClick={handleClick}>
                 <DialogHeader>
                     <DialogTitle>Gérer le lit {bedIndex + 1}</DialogTitle>
@@ -344,7 +383,69 @@ const BedInfo = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIn
             </DialogContent>
         </Dialog>
     );
-};
+});
+
+BedInfo.displayName = "BedInfo";
+
+const DownloadClientPrint = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex: number, floorIndex: number }) => {
+    const [isGeneratingPrint, setIsGeneratingPrint] = useState(false)
+    const [localStorage] = useLocalStorage<{
+        name: string;
+        floors: {
+            id: number;
+            rooms: {
+                id: number;
+                beds: {
+                    id: string;
+                    occupied: boolean;
+                    client: {
+                        name: string;
+                        CIN: string;
+                        phone: string;
+                        occupationDuration: string;
+                        from: Date;
+                        to: Date;
+                    };
+                }[];
+            }[];
+        }[];
+    }
+    >('onboarding', {
+        name: '',
+        floors: [],
+    });
+
+    const room = localStorage.floors[floorIndex].rooms[roomIndex];
+    const bed = room.beds[bedIndex];
+    const client = bed.client;
+
+    const downloadPdf = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsGeneratingPrint(true);
+        const clientPrintProps: ClientPrintProps = {
+            firstName: client.name.split(' ')[0],
+            lastName: client.name.split(' ')[1],
+            cin: client.CIN,
+            roomNumber: room.id.toString(),
+            arrivalDate: new Date(client.from).toLocaleDateString('fr-FR'),
+        }
+        const fileName = `${clientPrintProps.firstName}_${clientPrintProps.cin}_${clientPrintProps.roomNumber}_${clientPrintProps.arrivalDate}.pdf`;
+        const blob = await pdf(<ClientPrint {...clientPrintProps} />).toBlob();
+        saveAs(blob, fileName);
+        setIsGeneratingPrint(false);
+    };
+
+    return (
+        <button onClick={downloadPdf} disabled={isGeneratingPrint || !bed.occupied} className={cn('text-white font-semibold py-2 px-4 rounded shadow-md transition duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 flex items-center gap-2', !client ? 'bg-gray-100 cursor-not-allowed text-black' : 'bg-blue-500 hover:bg-blue-600 '
+        )}>
+
+            {isGeneratingPrint ? <Loader2 className="animate-spin" /> : <>
+                <span>Télécharger</span> <DownloadCloud />
+            </>}
+        </button>
+    )
+}
+
 const InfoIcon = () => {
     return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
