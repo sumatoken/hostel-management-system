@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
         enableSystem
         disableTransitionOnChange
       >
+        <Analytics />
         <div className="flex flex-col items-center justify-between gap-10 px-1 py-2 lg:px-4 lg:py-6">
           <header className="w-full px-4 max-w-[1440px]">
             <nav className="flex items-center justify-between">
