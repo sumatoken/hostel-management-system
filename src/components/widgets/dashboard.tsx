@@ -16,6 +16,18 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 import { useLocalStorage } from "usehooks-ts";
 import {
     Form,
@@ -108,6 +120,7 @@ function Dashboard() {
 }
 
 const Bed = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex: number, floorIndex: number }) => {
+    const [open, setOpen] = useState(false);
     const bedInfoRef = useRef<{ setOpen: (open: boolean) => void }>(null);
     const [localStorage, setValues] = useLocalStorage<{
         name: string;
@@ -135,21 +148,50 @@ const Bed = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: number, roomIndex:
     });
     const bed = localStorage.floors[floorIndex].rooms[roomIndex].beds[bedIndex];
     const client = bed.client
+    const removeOccupation = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const newValues = { ...localStorage };
+        newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied = false
+        delete newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].client
+        setValues(newValues);
+    }
     const toggleOccupation = () => {
         if (bed.occupied) {
-            const newValues = { ...localStorage };
-            newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied = false
-            delete newValues.floors[floorIndex].rooms[roomIndex].beds[bedIndex].client
-            setValues(newValues);
+            console.log('====================================');
+            console.log('bed is occupied');
+            console.log('====================================');
+            setOpen(true)
             return
         }
         if (bedInfoRef.current) {
             bedInfoRef.current.setOpen(true);
         }
+
+    }
+
+    const handleCancel = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setOpen(false);
     }
 
     return (
-        <button onClick={toggleOccupation}>
+        <button onClick={toggleOccupation} >
+            <AlertDialog open={open} onOpenChange={setOpen} >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Êtes-vous absolument sûr ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Cette action est irréversible. Cela marquera définitivement ce lit comme non occupé
+                            et supprimera toutes les données associées à cette occupation.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={handleCancel}>Annuler</AlertDialogCancel>
+                        <AlertDialogAction onClick={removeOccupation} className="bg-red-500 text-white">Continuer</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <Card key={bedIndex} className={cn('h-full', localStorage.floors[floorIndex].rooms[roomIndex].beds[bedIndex].occupied ? " border-red-400" : "border-4 border-green-400", 'border-2')}>
                 <CardContent className="p-4 space-y-4">
                     <CardHeader className="w-full flex flex-row items-center justify-between p-0">
@@ -438,9 +480,9 @@ const DownloadClientPrint = ({ bedIndex, roomIndex, floorIndex }: { bedIndex: nu
     return (
         <button onClick={downloadPdf} disabled={isGeneratingPrint || !bed.occupied} className={cn('text-white font-semibold py-2 px-4 rounded shadow-md transition duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 flex items-center gap-2', !client ? 'bg-gray-100 cursor-not-allowed text-black' : 'bg-blue-500 hover:bg-blue-600 '
         )}>
-
+            Télécharger
             {isGeneratingPrint ? <Loader2 className="animate-spin" /> : <>
-                <span>Télécharger</span> <DownloadCloud />
+                <DownloadCloud />
             </>}
         </button>
     )

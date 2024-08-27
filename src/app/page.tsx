@@ -1,6 +1,7 @@
 import { ThemeToggle } from "@/components/theme-toggle";
 import Onboarding from "@/components/widgets/onboarding";
 import { cn } from "@/lib/utils";
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -37,4 +38,8 @@ export default function Home() {
       </div>
     </>
   );
+}
+
+export const metadata: Metadata = {
+  title: 'Gérer les chambres d\'auberge efficacement',
 }

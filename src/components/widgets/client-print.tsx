@@ -6,6 +6,11 @@ Font.register({
     src: '/fonts/NotoNaskhArabic-Regular.ttf',
 });
 
+Font.register({
+    family: 'Roboto',
+    src: '/fonts/Roboto-Thin.ttf',
+});
+
 const styles = StyleSheet.create({
     page: {
         backgroundColor: '#f7fafc',
@@ -89,6 +94,8 @@ const styles = StyleSheet.create({
     symbol: {
         fontSize: 60,
         marginRight: 4,
+        fontFamily: 'Roboto',
+        fontWeight: 100,
     },
     wFull: {
         width: '100%',

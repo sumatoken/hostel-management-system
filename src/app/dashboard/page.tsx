@@ -1,4 +1,5 @@
 import Dashboard from "@/components/widgets/dashboard";
+import { Metadata } from "next";
 
 export default function Home() {
     return (
@@ -6,4 +7,8 @@ export default function Home() {
             <Dashboard />
         </main>
     );
+}
+
+export const metadata: Metadata = {
+    title: 'Gérer les chambres d\'auberge efficacement',
 }
