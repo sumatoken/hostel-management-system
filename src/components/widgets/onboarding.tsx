@@ -100,7 +100,7 @@ const Onboarding = () => {
                     {form.getValues('step') === 'ROOMS_PER_FLOOR' && <Step2 />}
                     {form.getValues('step') === 'BEDS_PER_ROOM' && <Step3 />}
                 </div>
-                <Button type="submit" onClick={goToNextStep} className=""><span className="pr-1">Suivant</span> {' '}<ArrowRightIcon className="shrink-0 w-5 h-5" /></Button>
+                <Button type="submit" onClick={goToNextStep} className=""><span className="pr-1">Next</span> {' '}<ArrowRightIcon className="shrink-0 w-5 h-5" /></Button>
             </form>
         </Form>
     )
@@ -114,7 +114,7 @@ const Step0 = () => {
         name="name"
         render={({ field }) => (
             <FormItem className="w-full max-w-sm">
-                <FormLabel>Nom de l{"'"}hostel</FormLabel>
+                <FormLabel>Name of the hotel</FormLabel>
                 <FormControl>
                     <Input placeholder="Hilton" {...field} />
                 </FormControl>
@@ -133,7 +133,7 @@ const Step1 = () => {
             name="numFloors"
             render={({ field }) => (
                 <FormItem className="w-full max-w-sm">
-                    <FormLabel>Nombre {"'"}étages</FormLabel>
+                    <FormLabel>Number of floors</FormLabel>
                     <FormControl>
                         <Input type="number" min={0} {...field} />
                     </FormControl>
@@ -157,7 +157,7 @@ const Step2 = () => {
                 name={'roomsPerFloor.floor_' + (index + 1).toString() as `roomsPerFloor.${string}`}
                 render={({ field }) => (
                     <FormItem className="w-full">
-                        <FormLabel>Nombre de chambres à l{"'"}étage {index + 1}</FormLabel>
+                        <FormLabel>Number of rooms in floor {index + 1}</FormLabel>
                         <FormControl>
                             <Input type="number" min={0} {...field} />
                         </FormControl>
@@ -190,7 +190,7 @@ const Step3 = () => {
                                 name={'bedsPerRoom.floor_' + (index + 1).toString() + '_room_' + (roomIndex + 1).toString() as `bedsPerRoom.${string}`}
                                 render={({ field }) => (
                                     <FormItem className="w-full">
-                                        <FormLabel>Lits dans la chambre {roomIndex + 1}</FormLabel>
+                                        <FormLabel>Number of beds in room {roomIndex + 1}</FormLabel>
                                         <FormControl>
                                             <Input type="number" min={0} {...field} />
                                         </FormControl>
